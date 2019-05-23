@@ -4,13 +4,25 @@ from pyramid.config import Configurator
 from wsgiref.simple_server import make_server
 from CeleryServer import mult
 import time
+import json
 
 
 # upload Json params by POST
 @view_config(route_name='upload', request_method='POST')
 def upload(request):
-    j = {1: [5, 7, 2], 2: [8, 3, 2], 3: [2, 5, 1]}
-    # param = json.loads(request.params['param'])
+    # print(request)
+    # j = {1: [5, 7, 2], 2: [8, 3, 2], 3: [2, 5, 1]}
+    s = request.body
+    l = request.params
+    w = request.POST
+    # p = request.POST.get('data')
+    # param = json.loads(request.POST.get('data'))
+    # print(s)
+    # print(l)
+    # param = json.load(l)
+    # print(param)
+    param = json.loads(l)
+    print(param)
     x = mult.delay(2, 4, 6)
     return Response('upload {}'.format(x.get()))
 
@@ -37,4 +49,5 @@ if __name__ == '__main__':
 
         wapp = config.make_wsgi_app()
     server = make_server('0.0.0.0', 6543, wapp)
+    # r = requests.post("http://localhost:6543/upload", data=json.dumps({1: [5, 7, 2], 2: [8, 3, 2], 3: [2, 5, 1]}))
     server.serve_forever()
