@@ -1,29 +1,23 @@
+from time import sleep
+
 from celery import Celery
 import celeryconfig
-import sqlalchemy
-from sqlalchemy import create_engine
-
-# app = Celery('tasks', broker='pyamqp://guest@localhost//', backend='db+sqlite:///results.sqlite')
-
 
 app = Celery('tasks')
 app.config_from_object(celeryconfig)
 
 
-# engine = create_engine('sqlite:///results.sqlite')
-
-
-# app.conf.result_backend(engine)
-
-
 @app.task
-def mult(x, y, z):
+def mult(key, x, y, z):
+    # sleep(10)
     return x * y * z
 
 
-# if __name__ == '__main__':
+"""""
+def store_metadata(key, x, y, z):
+    metadata = TaskMetaData()
+    metadata.task_id = key
+    metadata.task_ex = "{}*{}*{}".format(x, y, z)
 
-
-def sendRes():
-    # send result to the DB
-    return 0
+    metadata.save()
+"""
