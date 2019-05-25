@@ -3,19 +3,29 @@ Ori Kopel
 okopel@gmail.com
 """
 
+import os.path
+
 from celery import Celery
-from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String
 
 import celeryconfig
+import config as settings
 
 # Initialization Celery Server
 app = Celery('tasks')
 app.config_from_object(celeryconfig)
 
 # open exist DB to save the results
-engine = create_engine('sqlite:///client_data.db', echo=True)
+engine = create_engine('sqlite:///' + settings.client_data_path)
 metadata = MetaData(engine)
-tableOfRes = Table('client_data', metadata, autoload=True)
+tableOfRes = Table(settings.client_data_name, metadata,
+                   Column('id', Integer, primary_key=True),
+                   Column('raw_data', String),
+                   Column('result', String))
+
+# tableOfRes = Table(settings.client_data_name, metadata, autoload=True)
+if not os.path.exists(settings.client_data_path):
+    tableOfRes.create()
 
 
 # This task get ID(=key) and some args
@@ -25,7 +35,6 @@ def mult(key, args):
     ans = 1
     for num in args:
         ans *= num
-    # sleep(10)
     update_by_id(key, ans)
     return ans
 
