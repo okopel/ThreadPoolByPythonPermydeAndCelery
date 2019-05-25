@@ -1,6 +1,7 @@
 """""
 Ori Kopel
 okopel@gmail.com
+AppCard May 2019
 """
 
 import os.path
