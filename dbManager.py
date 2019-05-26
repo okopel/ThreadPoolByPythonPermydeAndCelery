@@ -26,12 +26,10 @@ class DbManager:
 
     # Virtually private constructor
     def __init__(self):
-
         if DbManager.__instance is not None:
             raise Exception("This class is a singleton!")
         else:
             DbManager.__instance = self
-
         self.engine = create_engine('sqlite:///' + settings.client_data_path)
         metadata_client_data = MetaData(self.engine)
         self.table = Table(settings.client_data_name, metadata_client_data,
@@ -55,7 +53,7 @@ class DbManager:
             mutex.release()
             return ans
 
-    # insert the id  & raw data to the db
+    # Insert the id  & raw data to the db
     # result will be "wait" flag until calculating
     # return 0 if success, 1 for an error
     def insertEx(self, r_id, raw_d):
@@ -66,12 +64,12 @@ class DbManager:
         else:
             return 0
 
-    # get the result from the DB by ID
+    # Get the result from the DB by ID
     def getResById(self, r_id):
         msg = select([self.table.c.result]).where(self.table.c.id == r_id)
         return self.executeEngine(msg)
 
-    # save the result in the db
+    # Save the result in the db
     def updateResById(self, r_id, ans):
         msg = self.table.update().values(result=str(ans)).where(self.table.columns.id == r_id)
         return self.executeEngine(msg)
