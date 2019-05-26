@@ -19,6 +19,6 @@ def getmsg():
 
 
 if __name__ == '__main__':
-    for i in range(100):
+    for i in range(80, 200):
         t = threading.Thread(target=postThread, args=(i,))
         t.start()

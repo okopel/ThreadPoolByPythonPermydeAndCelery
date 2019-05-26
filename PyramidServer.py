@@ -14,19 +14,7 @@ import config as settings
 import dbManager
 from CeleryServer import mult
 
-"""""
-# Create the DB
-engine = create_engine('sqlite:///' + settings.client_data_path)
-metadata_client_data = MetaData(engine)
-table = Table(settings.client_data_name, metadata_client_data,
-              Column('id', Integer, primary_key=True),
-              Column('raw_data', String),
-              Column('result', String), autoload=True)
-# create the DB just if It does not exist
-if not os.path.exists(settings.client_data_path):
-    table.create()
-"""
-
+# db instance
 mydb = dbManager.DbManager.getInstance()
 
 
@@ -52,8 +40,8 @@ def upload(request):
 @view_config(route_name='result', request_method='GET')
 def result(request):
     r_id = int(request.matchdict['result_id'])
-    ans = mydb.getById(r_id)
-    if ans == settings.tmp_var_name:  # The result isn't ready yet
+    ans = mydb.getResById(r_id)
+    if ans == settings.tmp_var_name:  # The result doesn't ready yet
         print(settings.ans_not_ready)
         return Response(settings.ans_not_ready)
     elif ans is None:  # The id is incorrect
@@ -64,6 +52,7 @@ def result(request):
         return Response(json_body={"result": ans})
 
 
+# init the pyramid server
 def open_server():
     with Configurator() as config:
         config.add_route('upload', '/upload')
