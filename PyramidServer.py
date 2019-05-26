@@ -4,17 +4,17 @@ okopel@gmail.com
 AppCard May 2019
 """
 
-import os.path
 from wsgiref.simple_server import make_server
 
 from pyramid.config import Configurator
 from pyramid.response import Response
 from pyramid.view import view_config
-from sqlalchemy import select, create_engine, MetaData, Table, Column, String, Integer
 
 import config as settings
+import dbManager
 from CeleryServer import mult
 
+"""""
 # Create the DB
 engine = create_engine('sqlite:///' + settings.client_data_path)
 metadata_client_data = MetaData(engine)
@@ -25,6 +25,9 @@ table = Table(settings.client_data_name, metadata_client_data,
 # create the DB just if It does not exist
 if not os.path.exists(settings.client_data_path):
     table.create()
+"""
+
+mydb = dbManager.DbManager.getInstance()
 
 
 # upload Json params by POST
@@ -36,12 +39,7 @@ def upload(request):
         mult.delay(k, dict_of_req[k])
         # convert the list to string, and delete the ", " in the end
         raw_d = ''.join(str(e) + ', ' for e in dict_of_req[k])[:-2]
-        msg = table.insert().values(id=int(k), raw_data=raw_d, result=settings.tmp_var_name)
-        try:
-            engine.execute(msg)
-        except:
-            how_many_err += 1
-            print(settings.err_exist_id)
+        how_many_err += mydb.insertEx(int(k), raw_d)
     if how_many_err < len(dict_of_req):
         print(settings.succ_sent)
         return Response(settings.succ_sent)
@@ -54,17 +52,16 @@ def upload(request):
 @view_config(route_name='result', request_method='GET')
 def result(request):
     r_id = int(request.matchdict['result_id'])
-    msg = select([table.c.result]).where(table.c.id == r_id)
-    ans = engine.execute(msg).scalar()
-    if ans == settings.tmp_var_name:
+    ans = mydb.getById(r_id)
+    if ans == settings.tmp_var_name:  # The result isn't ready yet
         print(settings.ans_not_ready)
-        return Response(settings.res_html_start + settings.ans_not_ready + settings.res_html_end)
-    elif ans is None:
+        return Response(settings.ans_not_ready)
+    elif ans is None:  # The id is incorrect
         print(settings.ans_not_id.format(r_id))
-        return Response(settings.res_html_start + settings.ans_not_id + settings.res_html_end)
+        return Response(settings.ans_not_id.format(r_id))
     else:
         print(settings.ans_good.format(r_id, ans))
-        return Response(settings.res_html_start + settings.ans_good + settings.res_html_end)
+        return Response(json_body={"result": ans})
 
 
 def open_server():
@@ -80,10 +77,3 @@ def open_server():
 
 if __name__ == '__main__':
     open_server()
-
-"""
-The default DB of CELERY
-engine = create_engine('sqlite:///results.sqlite', echo=True)
-metadata = MetaData(engine)
-tableOfRes = Table('celery_taskmeta', metadata, autoload=True)
-"""
