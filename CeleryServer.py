@@ -13,7 +13,7 @@ import dbManager
 app = Celery('tasks')
 app.config_from_object(celeryconfig)
 
-# get instance of the singelton DB
+# get instance of the singleton DB
 mydb = dbManager.DbManager.getInstance()
 
 
@@ -24,5 +24,7 @@ def mult(key, args):
     ans = 1
     for num in args:
         ans *= num
-    mydb.uploadResById(key, ans)
+    suc = mydb.updateResById(key, ans)
+    if suc is None:
+        print(key, "cant update")
     return ans

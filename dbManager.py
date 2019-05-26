@@ -1,3 +1,9 @@
+"""""
+Ori Kopel
+okopel@gmail.com
+AppCard May 2019
+"""
+
 import os.path
 from threading import Lock
 
@@ -31,7 +37,7 @@ class DbManager:
         self.table = Table(settings.client_data_name, metadata_client_data,
                            Column('id', Integer, primary_key=True),
                            Column('raw_data', String),
-                           Column('result', String), autoload=True)
+                           Column('result', String))
         # create the DB just if It does not exist
         if not os.path.exists(settings.client_data_path):
             self.table.create()
@@ -63,15 +69,9 @@ class DbManager:
     # get the result from the DB by ID
     def getResById(self, r_id):
         msg = select([self.table.c.result]).where(self.table.c.id == r_id)
-        ans = self.executeEngine(msg)
-        if ans == settings.tmp_var_name:  # The result doest ready yet
-            return ans
-        elif ans is not None:
-            return ans.scalar()
-        else:  # None case->exception
-            return None
+        return self.executeEngine(msg)
 
     # save the result in the db
-    def uploadResById(self, r_id, ans):
+    def updateResById(self, r_id, ans):
         msg = self.table.update().values(result=str(ans)).where(self.table.columns.id == r_id)
-        self.executeEngine(msg)
+        return self.executeEngine(msg)
