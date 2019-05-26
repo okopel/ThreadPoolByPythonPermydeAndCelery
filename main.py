@@ -13,11 +13,8 @@ def postThread(r_id):
         print(r_id, r)
 
 
-def getmsg():
-    url = 'http://localhost:6543/results/34'
-    p = requests.get(url)
-    print(p.content)
-    url = 'http://localhost:6543/results/8888880'
+def getmsg(r_id):
+    url = 'http://localhost:6543/results/{}'.format(r_id)
     p = requests.get(url)
     print(p.content)
 
@@ -25,3 +22,4 @@ def getmsg():
 if __name__ == '__main__':
     for i in range(100):
         t = threading.Thread(target=postThread, args=(i,)).start()
+        t1 = threading.Thread(target=getmsg, args=(i,)).start()
